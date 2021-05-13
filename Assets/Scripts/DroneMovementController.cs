@@ -2,102 +2,70 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
-public class DroneMovementController : MonoBehaviour
+[RequireComponent(typeof(InputsController))]
+public class DroneMovementController : DroneBase
 {
-    private float throttle;
+    private float yaw;
+    [SerializeField]
+    private float pitchPower = 30f, rollPower = 30f, yawPower = 4f, smothness = 2f, groundCheckDist = 1f;
+    private float finalPitch, finalYaw, finalroll;
 
-    public float speed = 10f, rotationSpeed = 0, groundCheckDist = 5f;
-
-    private bool isGrounded = false;
-
-    private Vector3 idleVelocity;
+    private bool isGrounded;
 
     [SerializeField]
     private LayerMask whatIsGround;
 
-    private Rigidbody droneRb;
-
     [SerializeField]
-    private Transform rightRotar, leftRotar, frontRotar, rearRotar, groundCheck;
+    private Transform groundCheck;
 
-    [SerializeField]
-    private InputSystem inputSystem;
+    private InputsController inputSystem;
+    private List<IEngine> engines = new List<IEngine>();
 
-    private void Awake()
-    {
-        droneRb = GetComponent<Rigidbody>();
-    }
+    public bool IsGrounded { get => isGrounded; }
+
     private void Start()
     {
-
+        inputSystem = GetComponent<InputsController>();
+        engines = GetComponentsInChildren<IEngine>().ToList<IEngine>();
     }
-    void Update()
+    private void Update()
     {
-        throttle += CalculateThrottle();
-        RotarBladesRotation();
-        if (inputSystem.IsInput)
-        {
-            ApplyThrust();
-            droneRb.drag = 0;
-
-        }
-
-        if (inputSystem.HasVerticalInput)
-            idleVelocity = droneRb.velocity;
-
-        RotationSpeedCheck();
-
+        isGrounded = Physics.Raycast(groundCheck.position, -transform.up, groundCheckDist, whatIsGround);
+    }
+    protected override void HandlePhysics()
+    {
+        HandleEngines();
+        HandleControls();
     }
 
-    private void RotationSpeedCheck()
+    protected virtual void HandleEngines()
     {
-        if (rotationSpeed >= 10000)
+        //rb.AddForce(Vector3.up * (rb.mass * Physics.gravity.magnitude));
+        foreach (IEngine engine in engines)
         {
-            if (inputSystem.IsInput)
-                rotationSpeed = 1000;
-            else
-            {
-                droneRb.velocity = idleVelocity;
-                //droneRb.drag = 50;
-                rotationSpeed += 10;
-            }
-
+            engine.UpdateEngine(rb, inputSystem);
+            engine.RotateBlades(this, inputSystem);
         }
     }
-
-    private float CalculateThrottle()
+    protected virtual void HandleControls()
     {
-        float throttleVal = inputSystem.Vertical * speed * Time.deltaTime;
-        throttleVal = Mathf.Clamp(throttleVal, -2.5f, 5f);
-        Debug.Log("throttle: " + throttleVal);
-        return throttleVal;
+        float pitch = -inputSystem.Cyclic.y * pitchPower;
+        float roll = inputSystem.Cyclic.x * rollPower;
+        yaw += inputSystem.YawInput * yawPower;
+
+        finalPitch = Mathf.Lerp(finalPitch, pitch, Time.deltaTime * smothness);
+        finalroll = Mathf.Lerp(finalroll, roll, Time.deltaTime * smothness);
+        finalYaw = Mathf.Lerp(finalYaw, yaw, Time.deltaTime * smothness);
+
+        Quaternion rotation = Quaternion.Euler(finalPitch, finalYaw, finalroll);
+        rb.MoveRotation(rotation);
     }
 
-    private void ApplyThrust()
-    {
-        droneRb.AddForceAtPosition(transform.up * throttle, rightRotar.position);
-        droneRb.AddForceAtPosition(transform.up * throttle, leftRotar.position);
-        droneRb.AddForceAtPosition(transform.up * throttle, frontRotar.position);
-        droneRb.AddForceAtPosition(transform.up * throttle, rearRotar.position);
-    }
-    private void RotarBladesRotation()
-    {
-        rotationSpeed += throttle * rotationSpeed;
 
-        rightRotar.rotation = Quaternion.Euler(-90f, rotationSpeed, 0);
-        leftRotar.rotation = Quaternion.Euler(-90f, rotationSpeed, 0);
-        frontRotar.rotation = Quaternion.Euler(-90f, rotationSpeed, 90f);
-        rearRotar.rotation = Quaternion.Euler(-90f, rotationSpeed, 90f);
-        //Debug.Log("Rotation speed: " + rotationSpeed);
-    }
-
-    private void OnCollisionEnter(Collision collision)
+    private void OnDrawGizmos()
     {
-        if (collision.gameObject.tag == "Ground")
-        {
-            Debug.Log("ghsdv");
-            isGrounded = true;
-        }
+        Gizmos.DrawLine(groundCheck.position, new Vector3(groundCheck.position.x, groundCheck.position.y - groundCheckDist, groundCheck.position.z));
     }
 }
