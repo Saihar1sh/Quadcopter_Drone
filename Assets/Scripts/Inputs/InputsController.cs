@@ -1,12 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(PlayerInput))]
 public class InputsController : MonoBehaviour
 {
-    private bool isInput, hasVerticalUpInput, hasVerticalDown;
+    private bool isInput;
 
     private Vector2 cyclic;
     private float yawInput, throttle;
@@ -14,24 +12,11 @@ public class InputsController : MonoBehaviour
 
     //properties -- read only
     public bool IsInput { get { return isInput; } }
-    public bool HasVerticalUpInput { get { return hasVerticalUpInput; } }
-    public bool HasVerticalDownInput { get { return hasVerticalDown; } }
 
     public Vector2 Cyclic { get => cyclic; }
     public float YawInput { get => yawInput; }
     public float Throttle { get => throttle; }
 
-
-
-
-
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
     void Update()
     {
 

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
@@ -11,6 +9,8 @@ public class DroneMovementController : DroneBase
     [SerializeField]
     private float pitchPower = 30f, rollPower = 30f, yawPower = 4f, smothness = 2f, groundCheckDist = 1f;
     private float finalPitch, finalYaw, finalroll;
+
+    public float invertPitch = 1f, invertRoll = 1f;
 
     private bool isGrounded;
 
@@ -24,6 +24,8 @@ public class DroneMovementController : DroneBase
     private List<IEngine> engines = new List<IEngine>();
 
     public bool IsGrounded { get => isGrounded; }
+
+
 
     private void Start()
     {
@@ -42,7 +44,6 @@ public class DroneMovementController : DroneBase
 
     protected virtual void HandleEngines()
     {
-        //rb.AddForce(Vector3.up * (rb.mass * Physics.gravity.magnitude));
         foreach (IEngine engine in engines)
         {
             engine.UpdateEngine(rb, inputSystem);
@@ -51,11 +52,11 @@ public class DroneMovementController : DroneBase
     }
     protected virtual void HandleControls()
     {
-        float pitch = -inputSystem.Cyclic.y * pitchPower;
-        float roll = inputSystem.Cyclic.x * rollPower;
+        float pitch = inputSystem.Cyclic.y * pitchPower * invertPitch;
+        float roll = inputSystem.Cyclic.x * rollPower * invertRoll;
         yaw += inputSystem.YawInput * yawPower;
 
-        finalPitch = Mathf.Lerp(finalPitch, pitch, Time.deltaTime * smothness);
+        finalPitch = Mathf.Lerp(finalPitch, pitch, Time.deltaTime * smothness);                 //smoothening the values
         finalroll = Mathf.Lerp(finalroll, roll, Time.deltaTime * smothness);
         finalYaw = Mathf.Lerp(finalYaw, yaw, Time.deltaTime * smothness);
 

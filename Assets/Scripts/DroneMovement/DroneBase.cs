@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 public class DroneBase : MonoBehaviour
@@ -18,13 +15,6 @@ public class DroneBase : MonoBehaviour
             startAngDrag = rb.angularDrag;
         }
     }
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
     void FixedUpdate()
     {
         if (!rb)
@@ -35,8 +25,5 @@ public class DroneBase : MonoBehaviour
         HandlePhysics();
     }
 
-    protected virtual void HandlePhysics()
-    {
-
-    }
+    protected virtual void HandlePhysics() { }
 }
