@@ -44,7 +44,7 @@ public class DroneEngine : MonoBehaviour, IEngine
 
         else if (!droneMovement.IsGrounded && inputs.IsInput)                           //not on ground and we input
         {
-            if (rotationSpeed <= 1000000)
+            if (rotationSpeed <= 1000000)                    //capping the rotation speed
                 rotationSpeed = 1000;
             float _throttle;
             if (inputs.Throttle == 0)                                                   //while not applying thrust
