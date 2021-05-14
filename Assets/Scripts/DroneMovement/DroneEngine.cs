@@ -37,7 +37,9 @@ public class DroneEngine : MonoBehaviour, IEngine
     public void RotateBlades(DroneMovementController droneMovement, InputsController inputs)
     {
         if (droneMovement.IsGrounded && !inputs.IsInput)                                //is on ground and we don't input
+        {
             RotationSpeed = Mathf.Lerp(rotationSpeed, 0, Time.deltaTime * 2f);
+        }
 
         else if (droneMovement.IsGrounded && inputs.IsInput)                            //is on ground and we input
             RotationSpeed += 10f;
