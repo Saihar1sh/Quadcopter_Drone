@@ -11,7 +11,7 @@ public class DroneEngine : MonoBehaviour, IEngine
 
     private void Start()
     {
-        UI.SetThrottleMaxValue();
+        // UI.SetThrottleMaxValue();
     }
 
     //Interface Methods
@@ -31,8 +31,7 @@ public class DroneEngine : MonoBehaviour, IEngine
         engineForce = Vector3.up * ((rb.mass * Physics.gravity.magnitude + finalDiff) + (inputs.Throttle * maxPower)) / 4f;
         rb.AddRelativeForce(engineForce, ForceMode.Force);
 
-        Debug.Log("force" + engineForce, gameObject);
-        UI.SetThrottleValue(engineForce.y);
+        //UI.SetThrottleValue(engineForce.y);
     }
     public void RotateBlades(DroneMovementController droneMovement, InputsController inputs)
     {
